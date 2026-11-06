@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,7 +25,6 @@ import {
   buildSubtitleTags,
   generateMusicWithLyria,
   generateStudioPreviewFallback,
-  resolveEffectiveLanguage,
 } from './services/lyriaService';
 import {
   FEELING_BOTTOM_OPTIONS,
@@ -38,14 +37,6 @@ import {
   type MusicPreferences,
   type ScreenStep,
 } from './types/music';
-
-const LOADING_STAGES = [
-  'Tuning instruments & studio acoustics...',
-  'Locking in your beat speed & rhythm...',
-  'Composing vocals & heartfelt lyrics...',
-  'Balancing bass, warmth & high-end air...',
-  'Mastering your full-length Aura Anthem...',
-] as const;
 
 const EQ_BAR_DELAYS = [
   '0ms',
@@ -78,28 +69,9 @@ export function App() {
 
   const [activeStep, setActiveStep] = useState<ScreenStep>(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [loadingStageIdx, setLoadingStageIdx] = useState(0);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isUploadingCloud, setIsUploadingCloud] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [generatedTrack, setGeneratedTrack] = useState<GeneratedTrack | null>(null);
-
-  useEffect(() => {
-    if (!isGenerating) return;
-
-    const stageTimer = window.setInterval(() => {
-      setLoadingStageIdx((prev) => (prev + 1) % LOADING_STAGES.length);
-    }, 4500);
-
-    const secTimer = window.setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1);
-    }, 1000);
-
-    return () => {
-      window.clearInterval(stageTimer);
-      window.clearInterval(secTimer);
-    };
-  }, [isGenerating]);
 
   const toggleInstrument = (inst: string) => {
     setPrefs((prev) => {
@@ -169,8 +141,6 @@ export function App() {
   };
 
   const handleGenerate = async () => {
-    setLoadingStageIdx(0);
-    setElapsedSeconds(0);
     setIsGenerating(true);
     setErrorMessage(null);
 
@@ -191,8 +161,6 @@ export function App() {
   };
 
   const handleGeneratePreviewFallback = async () => {
-    setLoadingStageIdx(0);
-    setElapsedSeconds(0);
     setIsGenerating(true);
     setErrorMessage(null);
     try {
@@ -221,86 +189,50 @@ export function App() {
   };
 
   // --- Full-Screen Loading View While Song Is Generating ---
-  const renderGeneratingScreen = () => {
-    const effectiveLanguage = resolveEffectiveLanguage(prefs);
-    const isInstrumental = prefs.sound === 'Instrumental';
+  const renderGeneratingScreen = () => (
+    <div className="w-full max-w-xl mx-auto min-h-screen px-6 py-10 flex flex-col items-center justify-between text-center">
+      {/* Top Brand + Title */}
+      <div className="w-full flex flex-col items-center mt-2">
+        <RuPayLogo size="lg" />
 
-    return (
-      <div className="w-full max-w-xl mx-auto min-h-screen px-6 py-10 flex flex-col items-center justify-between text-center">
-        {/* Top Brand + Title */}
-        <div className="w-full flex flex-col items-center mt-2">
-          <RuPayLogo size="lg" />
-
-          <h1 className="font-display text-3xl sm:text-4xl leading-[1.12] font-semibold tracking-[0.08em] text-[#7ebeff] uppercase mt-6">
-            MUSIC
-            <br />
-            GENERATOR
-          </h1>
-        </div>
-
-        {/* Center Animated Studio Visualizer */}
-        <div className="w-full max-w-md my-auto py-8 flex flex-col items-center">
-          {/* Glowing Equalizer Orb */}
-          <div className="relative w-40 h-40 rounded-full flex items-center justify-center mb-8">
-            <div className="absolute inset-0 rounded-full bg-[#1e6bff]/25 blur-2xl animate-pulse" />
-            <div className="absolute inset-2 rounded-full border border-[#8ec5ff]/35 animate-ping [animation-duration:2.6s]" />
-            <div className="relative w-32 h-32 rounded-full bg-[#060d30]/90 border border-[#6eb2ff]/60 shadow-[0_0_32px_rgba(0,136,255,0.45)] flex items-end justify-center gap-1.5 px-5 py-8">
-              {EQ_BAR_DELAYS.map((delay, idx) => (
-                <div
-                  key={idx}
-                  className="rupay-eq-bar w-1.5 h-16 rounded-full"
-                  style={{
-                    animationDelay: delay,
-                    background:
-                      'linear-gradient(180deg, #ffffff 0%, #9bcaff 45%, #2b7fff 100%)',
-                    boxShadow: '0 0 8px rgba(142, 197, 255, 0.8)',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-[0.08em] text-[#8ec5ff] uppercase">
-            CRAFTING YOUR AURA ANTHEM
-          </h2>
-
-          <p className="text-xs sm:text-sm font-medium text-white/90 mt-2.5 min-h-[22px] transition-all">
-            {LOADING_STAGES[loadingStageIdx]}
-          </p>
-
-          {/* Selected Vibe / Sound / Language Summary Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-            <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#0b1747]/90 border border-[#4f84e8]/50 text-[#bbe0ff]">
-              {prefs.sound}
-            </span>
-            <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#0b1747]/90 border border-[#4f84e8]/50 text-[#bbe0ff]">
-              {prefs.vibe}
-            </span>
-            <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-[#0b1747]/90 border border-[#4f84e8]/50 text-[#bbe0ff]">
-              {isInstrumental ? 'Instrumental' : `${effectiveLanguage} Vocals`}
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom Progress Note */}
-        <div className="w-full max-w-xs pb-4 flex flex-col items-center gap-2">
-          <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${Math.min(95, 12 + elapsedSeconds * 3)}%`,
-                background: 'linear-gradient(90deg, #79b8ff 0%, #ffffff 50%, #79b8ff 100%)',
-                boxShadow: '0 0 12px rgba(142, 197, 255, 0.9)',
-              }}
-            />
-          </div>
-          <span className="text-[11px] text-[#9bcaff]/80 tracking-wider uppercase font-mono">
-            Composing full studio track • {elapsedSeconds}s
-          </span>
-        </div>
+        <h1 className="font-display text-3xl sm:text-4xl leading-[1.12] font-semibold tracking-[0.08em] text-[#7ebeff] uppercase mt-6">
+          MUSIC
+          <br />
+          GENERATOR
+        </h1>
       </div>
-    );
-  };
+
+      {/* Center Animated Studio Visualizer */}
+      <div className="w-full max-w-md my-auto py-8 flex flex-col items-center">
+        {/* Glowing Equalizer Orb */}
+        <div className="relative w-40 h-40 rounded-full flex items-center justify-center mb-8">
+          <div className="absolute inset-0 rounded-full bg-[#1e6bff]/25 blur-2xl animate-pulse" />
+          <div className="absolute inset-2 rounded-full border border-[#8ec5ff]/35 animate-ping [animation-duration:2.6s]" />
+          <div className="relative w-32 h-32 rounded-full bg-[#060d30]/90 border border-[#6eb2ff]/60 shadow-[0_0_32px_rgba(0,136,255,0.45)] flex items-end justify-center gap-1.5 px-5 py-8">
+            {EQ_BAR_DELAYS.map((delay, idx) => (
+              <div
+                key={idx}
+                className="rupay-eq-bar w-1.5 h-16 rounded-full"
+                style={{
+                  animationDelay: delay,
+                  background:
+                    'linear-gradient(180deg, #ffffff 0%, #9bcaff 45%, #2b7fff 100%)',
+                  boxShadow: '0 0 8px rgba(142, 197, 255, 0.8)',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-[0.08em] text-[#8ec5ff] uppercase">
+          CRAFTING YOUR AURA ANTHEM
+        </h2>
+      </div>
+
+      {/* Bottom Spacer for vertical balance */}
+      <div className="pb-6" />
+    </div>
+  );
 
   // --- Step 1: Welcome / Splash ---
   const renderStep1 = () => (
