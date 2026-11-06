@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: rupay-ai-music
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LYRIA_MODEL
+        value: lyria-3.5
+      - key: VITE_CLOUDINARY_CLOUD_NAME
+        value: dmine8ovl
+      - key: VITE_CLOUDINARY_UPLOAD_PRESET
+        value: RuPayData
+      - key: VITE_CLOUDINARY_FOLDER
+        value: RuPay

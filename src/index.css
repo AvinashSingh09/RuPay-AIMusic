@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif-display: 'Cinzel', Georgia, serif;
+    --font-sans-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-script: 'Caveat', cursive;
+  }
+
+  body {
+    font-family: var(--font-sans-ui);
+    background-color: #020518;
+    color: #ffffff;
+    overflow-x: hidden;
+  }
+}
+
+.font-display {
+  font-family: var(--font-serif-display);
+}
+
+.font-script {
+  font-family: var(--font-script);
+}
+
+/* Signature RuPay Cobalt-to-Midnight Card Background */
+.rupay-screen-bg {
+  background:
+    radial-gradient(120% 90% at 10% 100%, rgba(0, 140, 255, 0.92) 0%, rgba(0, 72, 210, 0.72) 34%, rgba(5, 16, 62, 0.92) 68%, #020518 100%),
+    linear-gradient(195deg, #020516 0%, #05113b 52%, #004be0 88%, #0088ff 100%);
+}
+
+/* Glossy Pill Button from Mockup */
+.rupay-cta-btn {
+  background: linear-gradient(90deg, #a8d4ff 0%, #e8f4ff 48%, #79b8ff 100%);
+  box-shadow:
+    0 8px 28px -4px rgba(0, 132, 255, 0.65),
+    0 2px 6px rgba(255, 255, 255, 0.45) inset,
+    0 -2px 6px rgba(42, 114, 229, 0.35) inset;
+  color: #061539;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rupay-cta-btn:hover:not(:disabled) {
+  transform: translateY(-1.5px) scale(1.015);
+  box-shadow:
+    0 12px 34px -2px rgba(56, 165, 255, 0.8),
+    0 2px 8px rgba(255, 255, 255, 0.65) inset;
+}
+
+.rupay-cta-btn:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.99);
+}
+
+/* Selection Option Card */
+.rupay-option-card {
+  background: rgba(7, 12, 42, 0.84);
+  border: 1px solid rgba(52, 85, 165, 0.38);
+  box-shadow: 0 4px 14px rgba(1, 5, 24, 0.45);
+  transition: all 0.18s ease;
+}
+
+.rupay-option-card:hover,
+.rupay-option-card:focus-within {
+  background: rgba(14, 25, 74, 0.88);
+  border-color: rgba(132, 185, 255, 0.72);
+  box-shadow: 0 0 14px rgba(105, 158, 255, 0.25);
+}
+
+.rupay-option-card-active {
+  background: linear-gradient(180deg, rgba(24, 46, 110, 0.92) 0%, rgba(11, 22, 64, 0.95) 100%);
+  border: 1.5px solid #9bcaff;
+  box-shadow:
+    0 0 16px rgba(110, 178, 255, 0.38),
+    0 0 8px rgba(155, 202, 255, 0.22) inset;
+}
+
+/* Subtle section divider matching mockup */
+.rupay-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(126, 184, 255, 0.08) 0%, rgba(126, 184, 255, 0.45) 50%, rgba(126, 184, 255, 0.08) 100%);
+}
+
+/* Custom Horizontal Range Input */
+input[type="range"].rupay-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"].rupay-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 2px solid #8ec5ff;
+  box-shadow: 0 0 10px rgba(142, 197, 255, 0.9);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"].rupay-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+}
+
+input[type="range"].rupay-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 2px solid #8ec5ff;
+  box-shadow: 0 0 10px rgba(142, 197, 255, 0.9);
+  cursor: pointer;
+}
+
+@keyframes rupayEqBounce {
+  0%, 100% {
+    transform: scaleY(0.22);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.rupay-eq-bar {
+  transform-origin: bottom;
+  animation: rupayEqBounce 1.15s ease-in-out infinite;
+}
