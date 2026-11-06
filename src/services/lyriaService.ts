@@ -44,21 +44,6 @@ const FEELING_DESCRIPTORS: Record<string, string> = {
   'Chardi Kala': 'unstoppable optimism, triumphant high-spirits, and fearless uplifting power',
 };
 
-const LANGUAGE_DIRECTIVES: Record<SongLanguage, string> = {
-  Hindi:
-    'Vocal & Lyric Language: Sing all vocals and lyrics in Hindi (authentic Hindi lyrics and pronunciation). Do NOT sing in English.',
-  Punjabi:
-    'Vocal & Lyric Language: Sing all vocals and lyrics in Punjabi (authentic Punjabi lyrics, folk-pop cadence, and pronunciation).',
-  Hinglish:
-    'Vocal & Lyric Language: Sing vocals in modern Hinglish (a catchy urban blend of predominantly Hindi lyrics mixed with English hook phrases).',
-  English:
-    'Vocal & Lyric Language: Sing all vocals and lyrics in English.',
-  Tamil:
-    'Vocal & Lyric Language: Sing all vocals and lyrics in Tamil (authentic Tamil lyrics and pronunciation).',
-  Telugu:
-    'Vocal & Lyric Language: Sing all vocals and lyrics in Telugu (authentic Telugu lyrics and pronunciation).',
-};
-
 /**
  * Resolves the effective vocal language:
  * - Checks if the user explicitly requested a language inside their custom prompt text
@@ -85,7 +70,347 @@ export function buildSubtitleTags(prefs: MusicPreferences): string {
   return tags.join(', ');
 }
 
-export function buildLyriaPrompt(prefs: MusicPreferences): string {
+/**
+ * Builds structured, meaningful, rhyming lyrics (`[Verse 1]`, `[Chorus]`, `[Verse 2]`, `[Bridge]`, `[Chorus]`)
+ * in the selected language and mood so Lyria 3.5 always sings real, rhyming song verses and hooks.
+ */
+export function buildCuratedRhymingLyrics(prefs: MusicPreferences): string {
+  const lang = resolveEffectiveLanguage(prefs);
+  const isRomantic = prefs.vibe === 'Ishq Vibes' || prefs.feeling === 'Dil Se';
+  const isMelancholic = prefs.vibe === 'Feeling Blue' || prefs.feeling === 'Old-School Feels';
+  const isChill = prefs.vibe === 'Chill Scene' || prefs.feeling === 'Dreamy Scene' || prefs.feeling === 'Soulful';
+
+  if (lang === 'Punjabi') {
+    if (isRomantic) {
+      return `[Verse 1]
+Tere naal judiyan ne saahan diyan doriyan,
+Chann naalon sohniyan ne teriyan loriyan,
+Dil wali gal ajj bullan utte aayi ae,
+Tere bina zindagi adhoori parchhayi ae.
+
+[Chorus]
+Tu hi meri manzil, tu hi mera raah ve,
+Tere naalchalde ne mere saare saah ve,
+Ishq tere ne aisa जादू jagaaya ae,
+Har ik pal hunnjannat banaaya ae.
+
+[Verse 2]
+Akhiyan ch vasdi ae teri tasveer ve,
+Tere naal likhi rab ne meri taqdeer ve,
+Hawa vich ghulde ne geet mohabbatan de,
+Khul gaye ne boohe ajj saariyan chahatan de.
+
+[Bridge]
+Duniya bhula ke tenu apna banaaya ae,
+Dil de takhat utte tenu hi bithaaya ae.
+
+[Chorus]
+Tu hi meri manzil, tu hi mera raah ve,
+Tere naal chalde ne mere saare saah ve,
+Ishq tere ne aisa jaadu jagaaya ae,
+Har ik pal hunn jannat banaaya ae.`;
+    }
+
+    return `[Verse 1]
+Dhol diyan تھاپاں utte nachda zamana ae,
+Apni hi mauj vich chalda fasana ae,
+Hausle buland sade, rukde na kadde vi,
+Manzilan de nede aake jhukde na kadde vi.
+
+[Chorus]
+Chardi kala vich rehnde sade honsle,
+Aasman chhunde vekh sade faasle,
+Dil vich josh te zubaan utte geet ae,
+Har ik kadam utte apni hi jeet ae.
+
+[Verse 2]
+Raatan nu vi chamke sitareyan di chaadar,
+Mehnat de naal banne zindagi bahadar,
+Yaaran diyan toliyan te khushiyan da mela ae,
+Sajdasavera te suhana har vela ae.
+
+[Bridge]
+Rukna nahi ajj, bas uchi udaan ae,
+Apne iraadeyan naal apni pehchan ae.
+
+[Chorus]
+Chardi kala vich rehnde sade honsle,
+Aasman chhunde vekh sade faasle,
+Dil vich josh te zubaan utte geet ae,
+Har ik kadam utte apni hi jeet ae.`;
+  }
+
+  if (lang === 'Hinglish') {
+    return `[Verse 1]
+City lights चमकें and the night is feeling young,
+Dil ki dhadkan beats to the song upon my tongue,
+Chhod de tu kal ki saari tension aur fikar,
+Every single moment shines brighter than gold and silver.
+
+[Chorus]
+Apna hai time, yeah we own the night,
+Sapno ke pankh leke we are taking flight,
+Dil se mila le dil, feel the magic vibe,
+Nothing gonna stop us when the music comes alive.
+
+[Verse 2]
+Bass drops heavy aur kadam na rukein aaj,
+Apni hi dhun ka hai dil pe poora raaj,
+Stars in the sky jaise raste bulayein,
+Har ek beat pe hum khul ke muskurayein.
+
+[Bridge]
+No looking back now, hawaon mein hai josh,
+Let the rhythm take control, uda de saare hosh.
+
+[Chorus]
+Apna hai time, yeah we own the night,
+Sapno ke pankh leke we are taking flight,
+Dil se mila le dil, feel the magic vibe,
+Nothing gonna stop us when the music comes alive.`;
+  }
+
+  if (lang === 'English') {
+    if (isRomantic) {
+      return `[Verse 1]
+Golden shadows falling softly on the avenue,
+Every quiet melody is leading back to you,
+Whispers in the evening breeze are calling out your name,
+Nothing in this restless world will ever feel the same.
+
+[Chorus]
+Hold me in the rhythm of a thousand shining stars,
+Love becomes the compass showing everything we are,
+Dancing through the midnight till the sky begins to glow,
+Never let the music fade, never let me go.
+
+[Verse 2]
+Every heartbeat echoes like a promise in the dark,
+Two colliding galaxies ignited by a spark,
+Time is standing still whenever you are by my side,
+Drifting on the ocean of a warm electric tide.
+
+[Bridge]
+Through the highs and lows we rise above the clouds tonight,
+Turning every shadow into everlasting light.
+
+[Chorus]
+Hold me in the rhythm of a thousand shining stars,
+Love becomes the compass showing everything we are,
+Dancing through the midnight till the sky begins to glow,
+Never let the music fade, never let me go.`;
+    }
+
+    return `[Verse 1]
+Stepping through the neon lights with fire in our eyes,
+Chasing every horizon underneath electric skies,
+Hear the drums awakening the thunder in our chest,
+Never slowing down until we reach the very best.
+
+[Chorus]
+We are shining brighter than the sun above the clouds,
+Singing out our anthem to the rhythm of theek crowds,
+Every beat is lifting us to places never known,
+Standing on the edge of every dream we call our own.
+
+[Verse 2]
+Doubts are fading quickly in the rearview mirror glow,
+Every open highway is a stage for us to show,
+Heartbeats sync together as the melody unfolds,
+Turning every fleeting second into purest gold.
+
+[Bridge]
+Raise your hands into the air and feel the sudden rush,
+Breaking through the silence with a fearless lightning touch.
+
+[Chorus]
+We are shining brighter than the sun above the clouds,
+Singing out our anthem to the rhythm of the crowds,
+Every beat is lifting us to places never known,
+Standing on the edge of every dream we call our own.`;
+  }
+
+  if (lang === 'Tamil') {
+    return `[Verse 1]
+Vaanam thodum thooram indru kaalil vandhadhe,
+Kaatril varum raagam nenjil poo malarndhadhe,
+Kanavugal ellaam indru nijamaagum nerame,
+Ulagame namadhu paattil ullasamaai aadume.
+
+[Chorus]
+Pudhu veguam, pudhu thாளം, nenjukkulle pongudhe,
+Vetri kodi vaanam engum uyaravaai parakkudhe,
+Thadaigalai thaandi naamum munne selluvom,
+Oliyinai pola indru ulagai velluvom.
+
+[Verse 2]
+Iravinil minnum vinmeen vazhi kaattudhe,
+Idhayathin osai nalla thாளം kottudhe,
+Nambikkaiyin deepam endrum anaiyaadhu paar,
+Namadhu payanam indru yaarum thadukkaadhu paar.
+
+[Bridge]
+Siragugal virithu naamum vaanil parappom,
+Santhosha geetham paadi sigaram thoduvom.
+
+[Chorus]
+Pudhu vegam, pudhu thaalam, nenjukkulle pongudhe,
+Vetri kodi vaanam engum uyaravaai parakkudhe,
+Thadaigalai thaandi naamum munne selluvom,
+Oliyinai pola indru ulagai velluvom.`;
+  }
+
+  if (lang === 'Telugu') {
+    return `[Verse 1]
+Ningilona taaralanni manatho saagene,
+Gundelona kotha raagam paata paadene,
+Kalalanni నిజమయ్యే vela vacheraa,
+Chirunavvu thoti lokam veligipoyeraa.
+
+[Chorus]
+Saagipo, saagipo, aakasham neederaa,
+Gelupu pilupu neeku eduru chooseraa,
+Prathi adugu oka kotha sangeetham,
+Manasu ninda ponge aananda geetham.
+
+[Verse 2]
+Gaalilonaparimalalu mananu thaakene,
+Uthsaham urakalesi parugu theesene,
+Aashalanni rekkaluga maari egirene,
+cheekatanta veedi kotha velugu నిండెనే.
+
+[Bridge]
+Aagipoku ఎప్పుడూ nee gamyam cheraga,
+Prapanchame ninnu choosi murisipovaga.
+
+[Chorus]
+Saagipo, saagipo, aakasham neederaa,
+Gelupu pilupu neeku eduru chooseraa,
+Prathi adugu oka kotha sangeetham,
+Manasu ninda ponge aananda geetham.`;
+  }
+
+  // Default: Hindi (with distinct poetic rhyming lyrics for Romantic, Melancholic, Chill, and Upbeat/Happy)
+  if (isRomantic) {
+    return `[Verse 1]
+Teri aankhon mein jo khamosh sitaare chamkein,
+Mere dil ke yeh sabhi taar tumhi se dhadkein,
+Hawa chhu kar jo guzarti hai teri zulfon ko,
+Nayaik geet सुनाती hai meri saanson ko.
+
+[Chorus]
+Tu jo paas aaye toh har lamha suhana laage,
+Bina tere yeh jahaan saara begana laage,
+Dil ki har baat tujhe aaj sunaani hai mujhe,
+Apni har shaam tere naam bitaani hai mujhe.
+
+[Verse 2]
+Chaandni raat mein khilti hai teri muskaanein,
+Tujhpe aakar hi ruken meri sabhi pehchaanein,
+Tere kadmon se sajey pyaar ki har ek gali,
+Tere sang khil uthi armaanon ki har ek kali.
+
+[Bridge]
+Waqt tham jaaye yahin, bas tera saath rahe,
+Mere haathon mein hamesha tera hi haath rahe.
+
+[Chorus]
+Tu jo paas aaye toh har lamha suhana laage,
+Bina tere yeh jahaan saara begana laage,
+Dil ki har baat tujhe aaj sunaani hai mujhe,
+Apni har shaam tere naam bitaani hai mujhe.`;
+  }
+
+  if (isMelancholic) {
+    return `[Verse 1]
+Bheegi सड़कों pewoh yaadon ke nishaan baaqi hain,
+Kuch adhoori si kahani ke bayaan baaqi hain,
+Raat dhalti hai magar neend nahin aati hai,
+Purani dhun koi khamoshi mein bulati hai.
+
+[Chorus]
+Phir bhi dil mein kahin umeed ka taara chamke,
+Toote khwabon ke beech naya savera damke,
+Jo guzar gaya usey hawaon mein beh jaane de,
+Zindagi ko ek nayi baat keh jaane de.
+
+[Verse 2]
+Khidkiyon pe woh barasti hui boondein poochhein,
+Kyun purane hi sawalon mein khayal uljhein,
+Har andhere ke peeche subah ki roshni hai,
+Har khamoshi mein chhupi ek nayi raagini hai.
+
+[Bridge]
+Aansuon ko ponchh kar phir se muskurana hai,
+Bikhre lamhon se naya geet sajana hai.
+
+[Chorus]
+Phir bhi dil mein kahin umeed ka taara chamke,
+Toote khwabon ke beech naya savera damke,
+Jo guzar gaya usey hawaon mein beh jaane de,
+Zindagi ko ek nayi baat keh jaane de.`;
+  }
+
+  if (isChill) {
+    return `[Verse 1]
+Halki si dhoop hai aur thandi hawaon ka safar,
+Bheed se door kahin khud se mila hai yeh nazar,
+Meethi si dhun pe kadam haule se chalte jaayein,
+Har ghadi zindagi ke rang badalte jaayein.
+
+[Chorus]
+Chal udein baadalon ke paar bina parwah ke,
+Geet gaate hue har mod pe is raah ke,
+Dil ki aawaaz suno, waqt ko beh jaane do,
+Aaj ke pal ko hamesha ke liye reh jaane do.
+
+[Verse 2]
+Shaam ke rang dekho aasman pe bikhre hain,
+Saare ehsaas naye roop mein ab nikhre hain,
+Koi jaldi na koi shor yahan aata hai,
+Mann ka har kona sukoon-e-dil hi paata hai.
+
+[Bridge]
+Aankhein band karke zara meelon tak udaan bharo,
+Apne har khwab pe tum aaj se yakeen karo.
+
+[Chorus]
+Chal udein baadalon ke paar bina parwah ke,
+Geet gaate hue har mod pe is raah ke,
+Dil ki aawaaz suno, waqt ko beh jaane do,
+Aaj ke pal ko hamesha ke liye reh jaane do.`;
+  }
+
+  return `[Verse 1]
+Nayi subah ki kiran leke ujala aayi,
+Dil ki dhadkan mein nayi aaj tarang chhaayi,
+Sapne aankhon mein sajaye hum kadam badhaayein,
+Apni mehnat se naya aasman chhu jaayein.
+
+[Chorus]
+Uth ke chal, rukna mana hai, yeh zamana apna,
+Sach karenge aaj har ek suhana sapna,
+Dil mein hai josh, zubaan pe hai khushi ka taraana,
+Dekhta reh jaayega humko yeh saara zamana.
+
+[Verse 2]
+Raste mushkil sahi, hausla chattan sa hai,
+Har irada aaj toofan ke samaan sa hai,
+Sursajey, taal miley, jhoom uthey har mehfil,
+Jeet hi jeet likhi hai jahan jaaye yeh dil.
+
+[Bridge]
+Pankh phaila ke hawaon ka rukh modenge hum,
+Har sitaare ko zameen laake ab jodenge hum.
+
+[Chorus]
+Uth ke chal, rukna mana hai, yeh zamana apna,
+Sach karenge aaj har ek suhana sapna,
+Dil mein hai josh, zubaan pe hai khushi ka taraana,
+Dekhta reh jaayega humko yeh saara zamana.`;
+}
+
+export function buildMusicalStyleHeader(prefs: MusicPreferences): string {
   const bpm = Math.round(72 + (prefs.beatSpeed / 100) * 72); // 72 to 144 BPM
   const tempoLabel =
     prefs.beatSpeed < 35
@@ -106,50 +431,41 @@ export function buildLyriaPrompt(prefs: MusicPreferences): string {
       ? prefs.instruments.map((i) => INSTRUMENT_KEYWORDS[i] || i).join(', ')
       : 'Smooth Pianos, Warm Acoustic Guitar, and modern percussion';
 
-  // Interpret the 5 vertical Sound Balance sliders: [Bass, Warmth, Mids, Presence, Air]
   const [bass, warmth, mids, presence, air] = prefs.soundBalance;
   const mixNotes: string[] = [];
   if (bass >= 65) mixNotes.push('boomy sub-bass and deep low-end punch');
   if (warmth >= 65) mixNotes.push('warm analog low-mid body');
-  if (mids >= 65) mixNotes.push('forward, expressive lead melodies');
+  if (mids >= 65) mixNotes.push('forward, expressive lead vocals and melodies');
   if (presence >= 65) mixNotes.push('crisp percussion transient attack');
   if (air >= 65) mixNotes.push('shimmering high-end air and wide stereo sparkle');
   const mixDescription =
     mixNotes.length > 0
       ? `Mix & tonal balance: ${mixNotes.join(', ')}.`
-      : 'Mix & tonal balance: well-balanced studio master with clear stereo separation.';
+      : 'Mix & tonal balance: well-balanced studio master with clear vocal presence.';
 
   const isInstrumental = prefs.sound === 'Instrumental' || prefs.model === 'lyria-realtime-exp';
   const effectiveLanguage = resolveEffectiveLanguage(prefs);
-  const languageDirective = isInstrumental
-    ? 'Strictly instrumental track without vocals.'
-    : `${LANGUAGE_DIRECTIVES[effectiveLanguage]} Include expressive ${effectiveLanguage} vocals, catchy melodic hooks, and polished modern production.`;
-
-  const sectionsPrompt =
-    prefs.model === 'lyria-3-clip-preview' || prefs.model === 'lyria-realtime-exp'
-      ? `[0:00 - 0:06] Intro: Establish the ${prefs.sound} atmosphere with ${selectedInstruments}.
-[0:06 - 0:22] Main Hook / Chorus: Full ${prefs.vibe.toLowerCase()} groove drops in at ${bpm} BPM with ${prefs.feeling.toLowerCase()} emotion${isInstrumental ? '' : ` and ${effectiveLanguage} vocals`}.
-[0:22 - 0:30] Outro: Memorable melodic finish with resonant tail.`
-      : `[Intro] Atmospheric opening introducing ${selectedInstruments}.
-[Verse] Groove settles in at ${bpm} BPM with ${VIBE_DESCRIPTORS[prefs.vibe] || prefs.vibe}${isInstrumental ? '' : ` and expressive ${effectiveLanguage} vocals`}.
-[Chorus] Anthemic, unforgettable ${isInstrumental ? 'melodic' : effectiveLanguage} centerpiece capturing ${FEELING_DESCRIPTORS[prefs.feeling] || prefs.feeling}.
-[Bridge] Dynamic instrumental and vocal showcase highlighting ${selectedInstruments}.
-[Outro] Grand, cohesive finale.`;
-
   const customAddition = prefs.customPrompt.trim()
-    ? `\nAdditional creative direction from user: "${prefs.customPrompt.trim()}"`
+    ? ` Additional direction: ${prefs.customPrompt.trim()}.`
     : '';
 
-  return `${SOUND_DESCRIPTORS[prefs.sound] || prefs.sound} (${isInstrumental ? 'Instrumental' : `${effectiveLanguage} Song`}).
-Mood & Vibe: ${VIBE_DESCRIPTORS[prefs.vibe] || prefs.vibe}.
-Emotional Feeling: ${FEELING_DESCRIPTORS[prefs.feeling] || prefs.feeling}.
-Featured Instruments: ${selectedInstruments}.
-Tempo & Energy: ${tempoLabel}, with ${energyLabel}.
-${mixDescription}
-${languageDirective}${customAddition}
+  if (isInstrumental) {
+    return `Create a ${SOUND_DESCRIPTORS[prefs.sound] || prefs.sound} track. Mood: ${VIBE_DESCRIPTORS[prefs.vibe] || prefs.vibe}. Emotion: ${FEELING_DESCRIPTORS[prefs.feeling] || prefs.feeling}. Instruments: ${selectedInstruments}. Tempo & Energy: ${tempoLabel}, ${energyLabel}. ${mixDescription} Strictly instrumental only, no vocals.${customAddition}`;
+  }
 
-Structure:
-${sectionsPrompt}`;
+  return `Create a ${SOUND_DESCRIPTORS[prefs.sound] || prefs.sound} song sung in ${effectiveLanguage} with clear, expressive ${effectiveLanguage} vocals. Mood: ${VIBE_DESCRIPTORS[prefs.vibe] || prefs.vibe}. Emotion: ${FEELING_DESCRIPTORS[prefs.feeling] || prefs.feeling}. Instruments: ${selectedInstruments}. Tempo & Energy: ${tempoLabel}, ${energyLabel}. ${mixDescription}${customAddition}`;
+}
+
+export function buildLyriaPrompt(prefs: MusicPreferences, customLyrics?: string): string {
+  const styleHeader = buildMusicalStyleHeader(prefs);
+  const isInstrumental = prefs.sound === 'Instrumental' || prefs.model === 'lyria-realtime-exp';
+
+  if (isInstrumental) {
+    return styleHeader;
+  }
+
+  const lyrics = (customLyrics || buildCuratedRhymingLyrics(prefs)).trim();
+  return `${styleHeader}, with the following lyrics:\n\n${lyrics}`;
 }
 
 function base64ToUint8Array(base64Data: string): Uint8Array {
@@ -188,7 +504,11 @@ interface ServerGenerateMusicResponse {
 export async function generateMusicWithLyria(
   prefs: MusicPreferences
 ): Promise<GeneratedTrack> {
-  const prompt = buildLyriaPrompt(prefs);
+  const styleHeader = buildMusicalStyleHeader(prefs);
+  const fallbackLyrics = buildCuratedRhymingLyrics(prefs);
+  const prompt = buildLyriaPrompt(prefs, fallbackLyrics);
+  const effectiveLanguage = resolveEffectiveLanguage(prefs);
+  const isInstrumental = prefs.sound === 'Instrumental' || prefs.model === 'lyria-realtime-exp';
   const bpm = Math.round(72 + (prefs.beatSpeed / 100) * 72);
   const weightedPrompt = `${SOUND_DESCRIPTORS[prefs.sound] || prefs.sound}, ${
     VIBE_DESCRIPTORS[prefs.vibe] || prefs.vibe
@@ -203,6 +523,14 @@ export async function generateMusicWithLyria(
     },
     body: JSON.stringify({
       prompt,
+      styleHeader,
+      fallbackLyrics,
+      language: effectiveLanguage,
+      vibe: prefs.vibe,
+      sound: prefs.sound,
+      feeling: prefs.feeling,
+      customPrompt: prefs.customPrompt,
+      isInstrumental,
       model: prefs.model,
       bpm,
       weightedPrompt,
@@ -227,7 +555,7 @@ export async function generateMusicWithLyria(
     audioUrl,
     audioBlob,
     mimeType,
-    lyrics: data.lyrics,
+    lyrics: data.lyrics || fallbackLyrics,
     promptUsed: prompt,
     modelUsed: data.modelUsed || prefs.model,
     createdAt: new Date().toISOString(),
@@ -298,7 +626,6 @@ export async function generateStudioPreviewFallback(
   const totalBeats = Math.floor(durationSeconds / beatDur);
   for (let b = 0; b < totalBeats; b++) {
     const t = b * beatDur;
-    // Kick / Dhol low hit
     const kickOsc = offlineCtx.createOscillator();
     const kickGain = offlineCtx.createGain();
     kickOsc.type = 'sine';
@@ -311,7 +638,6 @@ export async function generateStudioPreviewFallback(
     kickOsc.start(t);
     kickOsc.stop(t + 0.25);
 
-    // Syncopated Bhangra/Pop off-beat bounce
     if (b % 2 === 1 || prefs.sound.includes('Bhangra') || prefs.sound.includes('Punjabi')) {
       const syncTime = t + beatDur * 0.5;
       if (syncTime + 0.15 < durationSeconds) {
@@ -370,7 +696,7 @@ export async function generateStudioPreviewFallback(
     audioUrl,
     audioBlob: wavBlob,
     mimeType: 'audio/wav',
-    lyrics: `[Intro - ${bpm} BPM]\n(${prefs.sound} • ${prefs.vibe})\n\n[Chorus]\nOwn the edge, feel the ${prefs.feeling} wave\n${prefs.instruments.join(' & ')} lighting up the stage!`,
+    lyrics: buildCuratedRhymingLyrics(prefs),
     promptUsed: buildLyriaPrompt(prefs),
     modelUsed: `${prefs.model} (Studio Synth Preview)`,
     createdAt: new Date().toISOString(),

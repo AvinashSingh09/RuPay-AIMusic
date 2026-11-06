@@ -42,6 +42,69 @@ const MIME_TYPES = {
   '.wav': 'audio/wav',
 };
 
+/**
+ * Uses `gemini-2.5-flash` as a master lyricist to compose bespoke, poetic, strictly rhyming
+ * song lyrics (`[Verse 1]`, `[Chorus]`, `[Verse 2]`, `[Bridge]`, `[Chorus]`) in the chosen
+ * language and mood before passing them to Lyria 3.5. Falls back to `fallbackLyrics` if unavailable.
+ */
+async function composeRhymingLyricsWithGemini(body, apiKey) {
+  if (body.isInstrumental || !body.styleHeader) {
+    return undefined;
+  }
+
+  const language = body.language || 'Hindi';
+  const songwriterPrompt = `You are an award-winning ${language} songwriter and poet (like Gulzar, Irshad Kamil, and Amitabh Bhattacharya for Hindi; Sidhu Moose Wala / Diljit / Karan Aujla style for Punjabi).
+Write meaningful, emotionally resonant, real song lyrics with strict end-rhymes (AABB or ABAB) and smooth, singable syllable meter.
+
+Song Details:
+- Language: ${language} (write in clean, natural Romanized ${language} script so the vocal synthesizer sings every word and rhyme with crystal-clear pronunciation)
+- Musical Style: ${body.sound || 'Modern Indian Pop'}
+- Mood / Vibe: ${body.vibe || 'Uplifting'}
+- Emotional Feeling: ${body.feeling || 'Heartfelt'}
+${body.customPrompt?.trim() ? `- User's Topic / Custom Request: "${body.customPrompt.trim()}"` : ''}
+
+Strict Requirements:
+1. Every couplet MUST rhyme naturally at the end of the lines (e.g. aayi/chhaayi, apna/sapna, raah ve/saah ve, night/flight) and tell a coherent, heartfelt story — NEVER use random disconnected words.
+2. Keep line lengths balanced (8 to 12 syllables per line) so they fit a musical melody naturally.
+3. Output ONLY the structured lyrics using these exact section tags and NO other intro/outro text or stage directions:
+
+[Verse 1]
+(4 rhyming lines)
+
+[Chorus]
+(4 catchy, memorable rhyming hook lines)
+
+[Verse 2]
+(4 rhyming lines that deepen the story)
+
+[Bridge]
+(2 to 4 emotional peak rhyming lines)
+
+[Chorus]
+(Repeat the 4 catchy rhyming hook lines)`;
+
+  try {
+    const client = new GoogleGenAI({ apiKey });
+    const timeoutPromise = new Promise((resolve) =>
+      setTimeout(() => resolve(null), 6500)
+    );
+    const genPromise = client.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: songwriterPrompt,
+    });
+
+    const response = await Promise.race([genPromise, timeoutPromise]);
+    const text = response?.text?.trim();
+    if (text && text.includes('[Verse') && text.includes('[Chorus]')) {
+      return text;
+    }
+  } catch {
+    // Fall back to curated rhyming lyrics
+  }
+
+  return body.fallbackLyrics;
+}
+
 function isModelNotFoundOrUnsupportedError(err) {
   const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
   return (
@@ -299,6 +362,13 @@ const server = http.createServer(async (req, res) => {
       const bpm = typeof body.bpm === 'number' ? body.bpm : 118;
       const weightedPrompt = body.weightedPrompt || body.prompt;
 
+      // Compose custom rhyming lyrics via Gemini 2.5 Flash (or use curated rhyming fallbackLyrics)
+      const rhymingLyrics = await composeRhymingLyricsWithGemini(body, apiKey);
+      const finalLyriaPrompt =
+        !body.isInstrumental && body.styleHeader && rhymingLyrics
+          ? `${body.styleHeader}, with the following lyrics:\n\n${rhymingLyrics}`
+          : body.prompt;
+
       const fallbackOrder = [
         requestedModel,
         'lyria-3.5',
@@ -316,8 +386,15 @@ const server = http.createServer(async (req, res) => {
             sendJson(200, result);
             return;
           }
-          const result = await callLyriaInteractionsServer(candidateModel, body.prompt, apiKey);
-          sendJson(200, result);
+          const result = await callLyriaInteractionsServer(
+            candidateModel,
+            finalLyriaPrompt,
+            apiKey
+          );
+          sendJson(200, {
+            ...result,
+            lyrics: result.lyrics || rhymingLyrics,
+          });
           return;
         } catch (err) {
           lastError = err;
